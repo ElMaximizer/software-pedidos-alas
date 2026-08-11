@@ -230,42 +230,12 @@ a {
 }
 
 .control-formulario input::placeholder {
-    color: var(--gris-placeholder);
-    opacity: 1;
-}
 
-.boton-mostrar-contrasena {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 auto;
-    width: 32px;
-    height: 32px;
-    padding: 3px;
-    color: var(--azul-principal);
-    background: transparent;
-    border: 0;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.boton-mostrar-contrasena:hover,
-.boton-mostrar-contrasena:focus-visible {
-    color: var(--amarillo-oscuro);
-    background: rgba(233, 169, 0, 0.12);
-    outline: none;
-}
-
-.icono--mostrar {
-    width: 27px;
-    height: 27px;
-}
 
 .boton-principal {
     min-height: 68px;
     margin-top: 2px;
     color: var(--blanco);
-    background: linear-gradient(180deg, var(--amarillo-oro), var(--amarillo-oscuro));
     border: 0;
     border-radius: 11px;
     box-shadow: 0 3px 0 rgba(166, 102, 0, 0.18);
@@ -278,9 +248,7 @@ a {
 
 .boton-principal:hover,
 .boton-principal:focus-visible {
-    filter: brightness(1.04);
     box-shadow: 0 5px 0 rgba(166, 102, 0, 0.22);
-    outline: none;
     transform: translateY(-1px);
 }
 
@@ -312,11 +280,9 @@ a {
     color: #9a9a9a;
 }
 
-.enlace-formulario:hover,
-.enlace-formulario:focus-visible {
+.enlace-formulario:hover {
     color: var(--amarillo-oscuro);
     text-decoration: underline;
-    outline: none;
 }
 
 .marca-qba {
@@ -340,7 +306,6 @@ a {
 
 .informacion-pie {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
     gap: 54px;
 }
 
@@ -364,7 +329,6 @@ a {
     width: 28px;
     height: 28px;
     flex: 0 0 auto;
-    stroke-width: 1.7;
 }
 
 .separador-pie {
@@ -505,4 +469,5 @@ a {
         flex-direction: column;
         gap: 8px;
     }
+}
 }
