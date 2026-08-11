@@ -2,7 +2,7 @@
 session_start();
 include '../Core/conexion.php';
 
-$error =
+$error = '';
 $usuario = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -37,7 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Inicio de sesión del sistema de registro de pedidos de Panadería Alas">
     <link rel="stylesheet" href="../../public/css/css.css">
     <title>Iniciar sesión | Panadería Alas</title>
 </head>
@@ -67,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <?php if ($error !== ''): ?>
-                <div class="mensaje-error" role="alert">
+                <div class="mensaje-error">
                     <img class="icono" src="../../public/images/icono-error.svg" alt="">
                     <span><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></span>
                 </div>
@@ -78,14 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label for="usuario">Usuario</label>
                     <div class="control-formulario">
                         <img class="icono icono--campo" src="../../public/images/icono-usuario.svg" alt="">
-                        <input
-                            type="text"
-                            id="usuario"
-                            name="usuario"
-                            value="<?= htmlspecialchars($usuario, ENT_QUOTES, 'UTF-8') ?>"
-                            placeholder="juan.perez"
-                            autocomplete="username"
-                            required
+                        <input type="text" id="usuario" name="usuario" value="<?= htmlspecialchars($usuario, ENT_QUOTES, 'UTF-8') ?>" placeholder="mia.carpanessi" required
                         >
                     </div>
                 </div>
@@ -94,17 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label for="password">Contraseña</label>
                     <div class="control-formulario">
                         <img class="icono icono--campo" src="../../public/images/icono-candado.svg" alt="">
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            placeholder="••••••••"
-                            autocomplete="current-password"
-                            required
-                        >
-                        <button class="boton-mostrar-contrasena" type="button" aria-label="Mostrar contraseña" aria-pressed="false">
-                            <img class="icono icono--mostrar" src="../../public/images/icono-contrasena-oculta.svg" alt="">
-                        </button>
+                        <input type="password" id="password" name="password" placeholder="••••••••" required>
                     </div>
                 </div>
 
@@ -154,17 +136,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="derechos-reservados">© 2026 Panadería Alas. Todos los derechos reservados.</p>
         </div>
     </footer>
-
-    <script>
-        const botonMostrarContrasena = document.querySelector('.boton-mostrar-contrasena');
-        const campoContrasena = document.querySelector('#password');
-
-        botonMostrarContrasena?.addEventListener('click', () => {
-            const mostrarContrasena = campoContrasena.type === 'password';
-            campoContrasena.type = mostrarContrasena ? 'text' : 'password';
-            botonMostrarContrasena.setAttribute('aria-pressed', String(mostrarContrasena));
-            botonMostrarContrasena.setAttribute('aria-label', mostrarContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña');
-        });
-    </script>
 </body>
 </html>
