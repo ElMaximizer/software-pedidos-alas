@@ -229,13 +229,11 @@ a {
     font-size: 22px;
 }
 
-.control-formulario input::placeholder {
-
-
 .boton-principal {
     min-height: 68px;
     margin-top: 2px;
     color: var(--blanco);
+    background-color: var(--amarillo-oro);
     border: 0;
     border-radius: 11px;
     box-shadow: 0 3px 0 rgba(166, 102, 0, 0.18);
@@ -469,5 +467,4 @@ a {
         flex-direction: column;
         gap: 8px;
     }
-}
 }
