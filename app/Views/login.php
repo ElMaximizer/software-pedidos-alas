@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <img class="icono icono--pie" src="../../public/images/icono-ubicacion.svg" alt="">
                         Panadería Alas
                     </h2>
-                    <p>Agraciada 1299 Esquina, Dr Luis Alberto de Herrera<br>Salto, Uruguay</p>
+                    <p>Av. Italia 1234<br>Salto, Uruguay</p>
                 </section>
 
                 <section class="bloque-pie" aria-labelledby="titulo-horario">
@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <img class="icono icono--pie" src="../../public/images/icono-telefono.svg" alt="">
                         Contáctanos
                     </h2>
-                    <p>098 788 807<br>pedidos@panaderiaalas.uy</p>
+                    <p>+598 473 12345<br>pedidos@panaderiaalas.uy</p>
                 </section>
             </div>
 
