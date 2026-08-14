@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($usuario) || empty($password)) {
         $error = 'Todos los campos son obligatorios.';
     } else {
-        $sql = "SELECT id, usuario, password FROM usuarios WHERE nombre = ?";
+        $sql = "SELECT id, usuario, password FROM usuarios WHERE nombree = ?";
         $stmt = $conexion->prepare($sql);
         $stmt->bind_param("s", $usuario);
         $stmt->execute();
