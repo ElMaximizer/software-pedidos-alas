@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($password !== $confirmPassword) {
         $error = 'Las contraseñas no coinciden.';
     } else {
-        $sqlExiste = "SELECT id FROM usuarios WHERE usuario = ?";
+        $sqlExiste = "SELECT id FROM solicitud_usuario WHERE nombre = ?";
         $stmtExiste = $conexion->prepare($sqlExiste);
         $stmtExiste->bind_param("s", $usuario);
         $stmtExiste->execute();
@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $hash = password_hash($password, PASSWORD_DEFAULT);
 
-            $sqlInsert = "INSERT INTO usuarios (usuario, password) VALUES (?, ?)";
+            $sqlInsert = "INSERT INTO solicitud_usuario (nombre, password) VALUES (?, ?)";
             $stmtInsert = $conexion->prepare($sqlInsert);
             $stmtInsert->bind_param("ss", $usuario, $hash);
 
