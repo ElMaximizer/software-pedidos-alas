@@ -43,6 +43,12 @@ a {
     flex-direction: column;
 }
 
+.pagina-registro {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
 .contenedor {
     width: min(100% - 48px, 1160px);
     margin: 0 auto;
@@ -134,6 +140,14 @@ a {
 }
 
 .tarjeta-inicio-sesion {
+    width: min(100% - 48px, 678px);
+    padding: 50px 57px 44px;
+    background: var(--blanco);
+    border-radius: 29px;
+    box-shadow: var(--sombra-tarjeta);
+}
+
+.tarjeta-registro {
     width: min(100% - 48px, 678px);
     padding: 50px 57px 44px;
     background: var(--blanco);
@@ -251,6 +265,28 @@ a {
 
 .boton-mostrar-contrasena:hover,
 .boton-mostrar-contrasena:focus-visible {
+    color: var(--amarillo-oscuro);
+    background: rgba(233, 169, 0, 0.12);
+    outline: none;
+}
+
+.boton-mostrar-contrasena-confirm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    padding: 3px;
+    color: var(--azul-principal);
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.boton-mostrar-contrasena-confirm:hover,
+.boton-mostrar-contrasena-confirm:focus-visible {
     color: var(--amarillo-oscuro);
     background: rgba(233, 169, 0, 0.12);
     outline: none;

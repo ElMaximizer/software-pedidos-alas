@@ -111,8 +111,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <button class="boton-principal" type="submit">Iniciar sesión</button>
 
                 <nav class="enlaces-formulario" aria-label="Enlaces de acceso">
-                    <a class="enlace-formulario enlace-formulario--olvido" href="#">¿Olvidaste tu contraseña?</a>
-                    <a class="enlace-formulario enlace-formulario--solicitud" href="#">Solicitar usuario</a>
+                    <a class="enlace-formulario enlace-formulario--olvido" href="register.php">¿Olvidaste tu contraseña?</a>
+                    <a class="enlace-formulario enlace-formulario--solicitud" href="register.php">Solicitar usuario</a>
                 </nav>
             </form>
 
