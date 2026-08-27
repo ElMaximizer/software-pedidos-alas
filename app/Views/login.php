@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../../public/css/css.css">
+    <link rel="stylesheet" href="../../public/css/css.css?v=4">
     <title>Iniciar sesión | Panadería Alas</title>
 </head>
 <body class="pagina-inicio-sesion">
@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <nav class="enlaces-formulario" aria-label="Enlaces de acceso">
                     <a class="enlace-formulario enlace-formulario--olvido" href="#">¿Olvidaste tu contraseña?</a>
-                    <a class="enlace-formulario enlace-formulario--solicitud" href="#">Solicitar usuario</a>
+                    <a class="enlace-formulario enlace-formulario--solicitud" href="register.php">Solicitar usuario</a>
                 </nav>
             </form>
 

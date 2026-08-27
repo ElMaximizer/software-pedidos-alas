@@ -1,0 +1,76 @@
+.encabezado-sitio {
+    flex: 0 0 auto;
+    color: var(--blanco);
+    background: var(--azul-principal);
+    border-bottom: 4px solid var(--amarillo-oro);
+}
+
+.encabezado-contenido {
+    min-height: 146px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+}
+
+.marca {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.marca--encabezado {
+    gap: 0;
+}
+
+.marca--tarjeta {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+}
+
+.marca-texto {
+    display: flex;
+    flex-direction: column;
+}
+
+.marca-nombre,
+.marca-descripcion {
+    display: block;
+    text-transform: uppercase;
+}
+
+.marca-nombre {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+}
+
+.marca-descripcion {
+    margin-top: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.03em;
+}
+
+.marca--tarjeta .marca-nombre {
+    color: var(--azul-principal);
+    font-size: 27px;
+}
+
+.marca--tarjeta .marca-descripcion {
+    color: var(--azul-principal);
+    margin-top: 7px;
+    font-size: 14px;
+}
+
+.icono {
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.9;
+}
