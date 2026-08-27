@@ -1,0 +1,47 @@
+.pie-sitio {
+    flex: 0 0 auto;
+    padding: 49px 0 27px;
+    color: var(--gris-texto);
+    background: var(--azul-principal);
+}
+
+.informacion-pie {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 54px;
+}
+
+.bloque-pie h2 {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin: 0 0 17px;
+    color: var(--amarillo-oro);
+    font-size: 18px;
+    line-height: 1.25;
+}
+
+.bloque-pie p {
+    margin: 0;
+    font-size: 17px;
+    line-height: 2.15;
+}
+
+.icono--pie {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+}
+
+.separador-pie {
+    height: 2px;
+    margin: 35px 0 26px;
+    background: rgba(233, 169, 0, 0.7);
+}
+
+.derechos-reservados {
+    margin: 0;
+    color: var(--gris-texto);
+    font-size: 16px;
+    text-align: center;
+}
