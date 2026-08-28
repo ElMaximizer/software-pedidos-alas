@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($usuario) || empty($password)) {
         $error = 'Todos los campos son obligatorios.';
     } else {
-        $sql = "SELECT id, usuario, password FROM usuarios WHERE nombre = ?";
+        $sql = "SELECT id_user, cedula, password, rol FROM usuarios WHERE cedula = ?";
         $stmt = $conexion->prepare($sql);
         $stmt->bind_param("s", $usuario);
         $stmt->execute();
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../../public/css/css.css?v=4">
+    <link rel="stylesheet" href="../../public/css/css.css">
     <title>Iniciar sesión | Panadería Alas</title>
 </head>
 <body class="pagina-inicio-sesion">
@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label for="usuario">Usuario</label>
                     <div class="control-formulario">
                         <img class="icono icono--campo" src="../../public/images/icono-usuario.svg" alt="">
-                        <input type="text" id="usuario" name="usuario" value="<?= htmlspecialchars($usuario, ENT_QUOTES, 'UTF-8') ?>" placeholder="mia.carpanessi" required
+                        <input type="text" id="usuario" name="usuario" value="<?= htmlspecialchars($usuario, ENT_QUOTES, 'UTF-8') ?>" placeholder="Numero de cédula" required
                         >
                     </div>
                 </div>
