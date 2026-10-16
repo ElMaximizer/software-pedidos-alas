@@ -1,158 +1,129 @@
 <?php
 session_start();
-if (isset($_SESSION['usuario'])) {
+
+if (isset($_SESSION['user_id'])) {
     header('Location: principal.php');
     exit();
 }
 
-include '../Core/conexion.php';
+require_once __DIR__ . '/../Core/conexion.php';
+
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 
 $error = '';
-$success = '';
-$usuario = '';
+$cedula = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $usuario = trim($_POST['usuario'] ?? '');
-    $password = $_POST['password'] ?? '';
-    $confirmPassword = $_POST['confirm_password'] ?? '';
+    $cedula = trim((string) ($_POST['cedula'] ?? ''));
+    $password = (string) ($_POST['password'] ?? '');
+    $confirmPassword = (string) ($_POST['confirm_password'] ?? '');
+    $csrfValido = isset($_POST['csrf_token'])
+        && hash_equals($_SESSION['csrf_token'], (string) $_POST['csrf_token']);
 
-    if (empty($usuario) || empty($password) || empty($confirmPassword)) {
+    if (!$csrfValido) {
+        $error = 'La sesión del formulario venció. Volvé a intentarlo.';
+    } elseif ($cedula === '' || $password === '' || $confirmPassword === '') {
         $error = 'Todos los campos son obligatorios.';
+    } elseif (!ctype_digit($cedula)) {
+        $error = 'Ingresá una cédula válida.';
+    } elseif (strlen($password) < 6) {
+        $error = 'La contraseña debe tener al menos 6 caracteres.';
     } elseif ($password !== $confirmPassword) {
         $error = 'Las contraseñas no coinciden.';
     } else {
-        $sqlExiste = "SELECT id FROM solicitud_usuario WHERE nombre = ?";
-        $stmtExiste = $conexion->prepare($sqlExiste);
-        $stmtExiste->bind_param("s", $usuario);
-        $stmtExiste->execute();
-        $resultadoExiste = $stmtExiste->get_result();
+        try {
+            $cedulaNumerica = (int) $cedula;
+            $stmtExiste = $conexion->prepare('SELECT id_sol FROM solicitud_usuario WHERE cedula = ?');
+            $stmtExiste->bind_param('i', $cedulaNumerica);
+            $stmtExiste->execute();
 
-        if ($resultadoExiste->num_rows > 0) {
-            $error = 'Este usuario ya está registrado.';
-        } else {
-            $hash = password_hash($password, PASSWORD_DEFAULT);
-
-            $sqlInsert = "INSERT INTO solicitud_usuario (nombre, password) VALUES (?, ?)";
-            $stmtInsert = $conexion->prepare($sqlInsert);
-            $stmtInsert->bind_param("ss", $usuario, $hash);
-
-            if ($stmtInsert->execute()) {
-                $success = 'Solicitud exitosa. Espera a que un administrador acepte tu solicitud.';
+            if ($stmtExiste->get_result()->num_rows > 0) {
+                $error = 'Ya existe un usuario con esa cédula.';
             } else {
-                $error = 'Error al solicitar usuario. Intenta de nuevo.';
+                $hash = password_hash($password, PASSWORD_DEFAULT);
+                $stmtInsert = $conexion->prepare('INSERT INTO solicitud_usuario (cedula, password) VALUES (?, ?)');
+                $stmtInsert->bind_param('is', $cedulaNumerica, $hash);
+                $stmtInsert->execute();
+                header('Location: login.php?registrado=1');
+                exit();
             }
+        } catch (Throwable $excepcion) {
+            $error = 'No pudimos completar el registro. Intentá nuevamente.';
         }
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../../public/css/css.css">
-    <title>Solicitar Usuario | Panadería Alas</title>
+    <link rel="stylesheet" href="../../public/css/css.css?v=20260920-1">
+    <title>Registro | Panadería Alas</title>
 </head>
-<body class="pagina-inicio-sesion">
-    <header class="encabezado-sitio">
-        <div class="contenedor encabezado-contenido">
-            <a class="marca marca--encabezado" href="register.php" aria-label="Panadería Alas, inicio">
+<body class="pagina-inicio-sesion pagina-registro">
+<?php require __DIR__ . '/partials/site-header.php'; ?>
+    <main class="contenido-principal">
+        <section class="tarjeta-inicio-sesion" aria-labelledby="titulo-registro">
+            <a class="marca marca--tarjeta" href="../../public/index.php" aria-label="Panadería Alas, inicio">
                 <span class="marca-texto">
                     <span class="marca-nombre">Panadería Alas</span>
                     <span class="marca-descripcion">Sistema de registro de pedidos</span>
                 </span>
             </a>
-        </div>
-    </header>
-
-    <main class="contenido-principal">
-        <section class="tarjeta-inicio-sesion" aria-labelledby="titulo-inicio-sesion">
-            <div class="marca marca--tarjeta" aria-label="Panadería Alas">
-                <span class="marca-texto">
-                    <span class="marca-nombre">Panadería Alas</span>
-                    <span class="marca-descripcion">Sistema de registro de pedidos</span>
-                </span>
-            </div>
 
             <div class="encabezado-formulario">
-                <h1 id="titulo-inicio-sesion">Solicitar Usuario</h1>
+                <h1 id="titulo-registro">Registro</h1>
             </div>
 
             <?php if ($error !== ''): ?>
-                <div class="mensaje-error">
+                <div class="mensaje-formulario mensaje-formulario--error" role="alert">
                     <img class="icono" src="../../public/images/icono-error.svg" alt="">
                     <span><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></span>
                 </div>
             <?php endif; ?>
 
-            <form class="formulario-inicio-sesion" action="register.php" method="post">
-                <div class="campo-formulario">
-                    <label for="usuario">Usuario</label>
-                    <div class="control-formulario">
+            <form class="formulario-inicio-sesion" method="post">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>">
+
+                <label class="campo-formulario" for="cedula">
+                    Cédula
+                    <span class="control-formulario">
                         <img class="icono icono--campo" src="../../public/images/icono-usuario.svg" alt="">
-                        <input type="text" id="usuario" name="usuario" value="<?= htmlspecialchars($usuario, ENT_QUOTES, 'UTF-8') ?>" placeholder="mia.carpanessi" required
-                        >
-                    </div>
-                </div>
+                        <input type="text" inputmode="numeric" id="cedula" name="cedula" value="<?= htmlspecialchars($cedula, ENT_QUOTES, 'UTF-8') ?>" placeholder="Número de cédula" autocomplete="username" required>
+                    </span>
+                </label>
 
-                <div class="campo-formulario">
-                    <label for="password">Contraseña</label>
-                    <div class="control-formulario">
+                <label class="campo-formulario" for="password">
+                    Contraseña
+                    <span class="control-formulario">
                         <img class="icono icono--campo" src="../../public/images/icono-candado.svg" alt="">
-                        <input type="password" id="password" name="password" placeholder="••••••••" required>
-                    </div>
-                </div>
+                        <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="new-password" required>
+                        <button class="boton-visibilidad" type="button" data-toggle-password="password" aria-label="Mostrar contraseña"><img src="../../public/images/icono-contrasena-oculta.svg" alt=""></button>
+                    </span>
+                </label>
 
-                <div class="campo-formulario">
-                    <label for="confirm_password">Confirmar Contraseña</label>
-                    <div class="control-formulario">
+                <label class="campo-formulario" for="confirm_password">
+                    Confirmar contraseña
+                    <span class="control-formulario">
                         <img class="icono icono--campo" src="../../public/images/icono-candado.svg" alt="">
-                        <input type="password" id="confirm_password" name="confirm_password" placeholder="••••••••" required>
-                    </div>
-                </div>
+                        <input type="password" id="confirm_password" name="confirm_password" placeholder="••••••••" autocomplete="new-password" required>
+                        <button class="boton-visibilidad" type="button" data-toggle-password="confirm_password" aria-label="Mostrar contraseña"><img src="../../public/images/icono-contrasena-oculta.svg" alt=""></button>
+                    </span>
+                </label>
 
-                <button class="boton-principal" type="submit">Solicitar Usuario</button>
-
+                <button class="boton-principal" type="submit">Registrar</button>
             </form>
 
             <div class="marca-qba">
-                <img class="marca-qba-imagen" src="../../public/images/QBA.png" alt="QBA">
+                <img class="marca-qba-imagen" src="../../public/images/QBA.png" alt="QBA, solo desarrolladores">
             </div>
         </section>
     </main>
 
-    <footer class="pie-sitio">
-        <div class="contenedor">
-            <div class="informacion-pie">
-                <section class="bloque-pie" aria-labelledby="titulo-direccion">
-                    <h2 id="titulo-direccion">
-                        <img class="icono icono--pie" src="../../public/images/icono-ubicacion.svg" alt="">
-                        Panadería Alas
-                    </h2>
-                    <p>Agraciada 1299 Esquina, Dr Luis Alberto de Herrera<br>Salto, Uruguay</p>
-                </section>
-
-                <section class="bloque-pie" aria-labelledby="titulo-horario">
-                    <h2 id="titulo-horario">
-                        <img class="icono icono--pie" src="../../public/images/icono-horario.svg" alt="">
-                        Horario de Atención
-                    </h2>
-                    <p>Lunes a Viernes: 06:00 - 18:00<br>Sábados: 06:00 - 13:00</p>
-                </section>
-
-                <section class="bloque-pie" aria-labelledby="titulo-contacto">
-                    <h2 id="titulo-contacto">
-                        <img class="icono icono--pie" src="../../public/images/icono-telefono.svg" alt="">
-                        Contáctanos
-                    </h2>
-                    <p>098 788 807<br>pedidos@panaderiaalas.uy</p>
-                </section>
-            </div>
-
-            <div class="separador-pie"></div>
-            <p class="derechos-reservados">© 2026 Panadería Alas. Todos los derechos reservados.</p>
-        </div>
-    </footer>
+<?php require __DIR__ . '/partials/site-footer.php'; ?>
+    <script src="../../public/js/auth.js" defer></script>
 </body>
 </html>

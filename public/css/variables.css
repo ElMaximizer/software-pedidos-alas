@@ -2,14 +2,15 @@
     --azul-principal: #071b32;
     --azul-secundario: #102a46;
     --azul-texto: #09213b;
-    --amarillo-oro: #e9a900;
-    --amarillo-oscuro: #d99300;
-    --fondo-claro: #f6f3ef;
+    --amarillo-oro: #eba900;
+    --amarillo-oscuro: #d89900;
+    --fondo-claro: #f7f4ef;
     --blanco: #ffffff;
     --gris-texto: #d8dde5;
     --gris-placeholder: #9297a0;
     --rojo-error: #b42318;
-    --sombra-tarjeta: 0 18px 42px rgba(7, 27, 50, 0.12);
+    --verde-exito: #267447;
+    --sombra-tarjeta: 0 4px 10px rgba(7, 27, 50, 0.16);
     font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -29,7 +30,9 @@ body {
 }
 
 button,
-input {
+input,
+textarea,
+select {
     font: inherit;
 }
 
