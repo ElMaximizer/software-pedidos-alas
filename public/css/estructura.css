@@ -1,0 +1,26 @@
+.pagina-inicio-sesion {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.contenedor {
+    width: min(100% - 48px, 1160px);
+    margin: 0 auto;
+}
+
+.contenido-principal {
+    flex: 1 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 74px 0 84px;
+}
+
+.tarjeta-inicio-sesion {
+    width: min(100% - 48px, 678px);
+    padding: 50px 57px 44px;
+    background: var(--blanco);
+    border-radius: 29px;
+    box-shadow: var(--sombra-tarjeta);
+}

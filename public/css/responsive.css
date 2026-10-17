@@ -1,0 +1,126 @@
+@media (max-width: 760px) {
+    .contenedor {
+        width: min(100% - 32px, 600px);
+    }
+
+    .encabezado-contenido {
+        min-height: 116px;
+    }
+
+    .marca--encabezado .marca-nombre {
+        font-size: 20px;
+    }
+
+    .marca--encabezado .marca-descripcion {
+        margin-top: 5px;
+        font-size: 10px;
+    }
+
+    .contenido-principal {
+        padding: 44px 0 52px;
+    }
+
+    .tarjeta-inicio-sesion {
+        width: min(100% - 32px, 600px);
+        padding: 38px 28px 36px;
+        border-radius: 22px;
+    }
+
+    .encabezado-formulario {
+        margin: 34px 0 26px;
+    }
+
+    .campo-formulario label {
+        font-size: 18px;
+    }
+
+    .control-formulario {
+        min-height: 66px;
+        padding: 0 15px;
+    }
+
+    .control-formulario input {
+        font-size: 18px;
+    }
+
+    .boton-principal {
+        min-height: 60px;
+        font-size: 19px;
+    }
+
+    .enlace-formulario {
+        font-size: 16px;
+    }
+
+    .marca-qba {
+        margin-top: 35px;
+        font-size: 26px;
+    }
+
+    .pie-sitio {
+        padding: 37px 0 24px;
+    }
+
+    .informacion-pie {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+
+    .bloque-pie h2 {
+        margin-bottom: 8px;
+    }
+
+    .bloque-pie p {
+        padding-left: 41px;
+        font-size: 16px;
+        line-height: 1.8;
+    }
+
+    .separador-pie {
+        margin: 30px 0 22px;
+    }
+
+    .derechos-reservados {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+}
+
+@media (max-width: 430px) {
+    .contenedor {
+        width: min(100% - 24px, 600px);
+    }
+
+    .encabezado-contenido {
+        gap: 12px;
+    }
+
+    .marca--encabezado .marca-nombre {
+        font-size: 16px;
+    }
+
+    .marca--encabezado .marca-descripcion {
+        max-width: 190px;
+        font-size: 8px;
+    }
+
+    .tarjeta-inicio-sesion {
+        width: min(100% - 24px, 600px);
+        padding-right: 20px;
+        padding-left: 20px;
+    }
+
+    .marca--tarjeta .marca-nombre {
+        font-size: 23px;
+    }
+
+    .marca--tarjeta .marca-descripcion {
+        font-size: 12px;
+    }
+
+    .enlaces-formulario {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+    }
+}

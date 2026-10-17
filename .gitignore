@@ -1,0 +1,4 @@
+/public/uploads/productos/*
+!/public/uploads/productos/.htaccess
+/tmp/
+__pycache__/

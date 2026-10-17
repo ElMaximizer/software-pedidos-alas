@@ -1,0 +1,2 @@
+# Archivos internos: PHP puede incluirlos, Apache no los expone como páginas.
+Require all denied
