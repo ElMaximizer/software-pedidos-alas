@@ -1,3 +1,2 @@
-<?php require __DIR__ . '/site-footer.php'; ?>
-</body>
-</html>
+<?php
+require __DIR__ . '/layout-footer.php';
