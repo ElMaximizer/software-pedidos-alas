@@ -1,10 +1,10 @@
 
-name: Deploy a InfinityFree
+name: Deploy InfinityFree
 
 on:
   push:
     branches:
-      - production
+      - produccion
 
   workflow_dispatch:
 
@@ -20,15 +20,15 @@ jobs:
       - name: Descargar repositorio
         uses: actions/checkout@v4
 
-      - name: Subir archivos a InfinityFree
+      - name: Subir proyecto completo
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          port: 21
           protocol: ftps
-          local-dir: ./public/
+          port: 21
+          local-dir: ./
           server-dir: ./htdocs/
           exclude: |
             **/.git*
@@ -37,4 +37,3 @@ jobs:
             **/node_modules/**
             **/.env
             **/.env.*
-            **/README.md
