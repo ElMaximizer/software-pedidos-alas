@@ -1,0 +1,10 @@
+RewriteEngine On
+
+# Proteger carpetas internas
+RewriteRule ^(app|database|docs|output)(/|$) - [F,L,NC]
+
+# Evitar bucles de reescritura
+RewriteCond %{REQUEST_URI} !^/public(/|$) [NC]
+
+# Cargar la web desde public
+RewriteRule ^(.*)$ public/$1 [L]
