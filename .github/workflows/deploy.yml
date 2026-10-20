@@ -37,3 +37,5 @@ jobs:
             **/node_modules/**
             **/.env
             **/.env.*
+            **/db_credentials.php
+            **/smtp_config.php

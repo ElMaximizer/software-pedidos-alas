@@ -2,3 +2,5 @@
 !/public/uploads/productos/.htaccess
 /tmp/
 __pycache__/
+/app/Core/db_credentials.php
+/app/Core/smtp_config.php

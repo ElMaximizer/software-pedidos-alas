@@ -65,13 +65,15 @@ El instalador y las migraciones solo se ejecutan por consola; no durante visitas
 - Interfaz adaptable a escritorio y móvil, formularios con CSRF y consultas
   preparadas. La confirmación del pedido evita duplicados al reenviar.
 
-## Correo local
+## Verificación de correo y bandeja local
 
-XAMPP no tiene SMTP configurado: **no se envían correos por Internet**.
-Las solicitudes y recuperaciones generan mensajes persistentes en una bandeja
+El registro envía por SMTP un código de seis dígitos y crea la solicitud solamente
+al verificarlo. Luego el administrador debe aprobar el acceso. Configurar
+`app/Core/smtp_config.php` en el hosting usando el ejemplo sin credenciales.
+Ese archivo privado se conserva durante el despliegue y nunca se sube a Git.
+PHPMailer está incluido y no requiere Composer. Ver [configuración y límites](docs/verificacion-correo.md).
+Las notificaciones anteriores de aprobación y recuperación conservan su bandeja
 local: Panel → Bandeja de correo local, disponible solo para administradores.
-Allí se pueden consultar y abrir los enlaces de recuperación para probar el flujo.
-Para usar correo real se deberá conectar un transporte SMTP.
 Las consultas de contacto se guardan en Panel → Consultas recibidas.
 
 ## Estructura del código
@@ -103,7 +105,8 @@ para abrir directamente.
 Con Apache y MySQL activos, una base local de desarrollo y los datos demo:
 
 ```powershell
-pwsh -NoProfile -File tests/integracion.ps1
+pwsh -NoProfile -File tests/integracion.ps1 -BuzonSmtpPrueba C:\ruta\buzon-pruebas.jsonl
+C:\xampp\php\php.exe tests\registro.php
 C:\xampp\php\php.exe tests\pedidos.php
 C:\xampp\php\php.exe tests\catalogo.php
 node --test tests/imagenes.test.js
