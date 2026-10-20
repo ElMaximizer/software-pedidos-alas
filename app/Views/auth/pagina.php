@@ -16,16 +16,14 @@
             <h1><?= e($tituloPagina) ?></h1>
             <?php show_flash(); ?>
             <?php if ($modo === 'sent'): ?>
-            <p><?= ($_SESSION['solicitud_enviada'] ?? '') === 'registro'
-                ? 'Correo verificado. Tu solicitud fue creada y debe ser aprobada por un administrador antes de iniciar sesión.'
-                : 'Si el correo corresponde a una cuenta registrada, las instrucciones estarán en la bandeja de correo de esta instalación.' ?></p>
+            <p>Si el correo corresponde a una cuenta registrada, las instrucciones estarán en la bandeja de correo de esta instalación. Las solicitudes de usuario deben ser aprobadas por un administrador.</p>
             <aside class="callout">
                 <h4>Solicitud registrada</h4>
                 <p>El equipo revisará tus datos para continuar.</p>
             </aside>
             <a class="button gold full" href="login.php">Volver a iniciar sesión</a>
             <?php else: ?>
-            <p><?= match ($modo) { 'login' => 'Ingresa con tu usuario autorizado.', 'register' => 'Primero verificaremos tu correo con un código. Después el administrador revisará tu solicitud.', 'recover' => 'Escribe el correo asociado a tu cuenta.', default => 'Elige una contraseña para recuperar tu acceso.' } ?></p>
+            <p><?= match ($modo) { 'login' => 'Ingresa con tu cédula de empleado o administrador.', 'register' => 'El administrador revisará tu solicitud de acceso al equipo.', 'recover' => 'Escribe el correo asociado a tu cuenta.', default => 'Elige una contraseña para recuperar tu acceso.' } ?></p>
             <?php if ($error): ?>
             <div class="notice danger" role="alert">
                 <strong><?= $modo === 'login' ? 'No pudimos iniciar sesión' : 'Revisá los datos' ?></strong>
@@ -55,7 +53,7 @@
                 <label>Correo electrónico
                     <input type="email" name="email" value="<?= e(post('email')) ?>" maxlength="190" placeholder="nombre@ejemplo.com" autocomplete="email" required>
                     <?php if ($modo === 'register'): ?>
-                    <small>Recibirás aquí el código para verificar tu correo.</small>
+                    <small>Recibirás aquí la respuesta a tu solicitud.</small>
                     <?php endif; ?>
                 </label>
                 <?php endif; ?>
@@ -79,7 +77,7 @@
                 <?php if ($modo === 'login'): ?>
                 <a class="text-link" href="recuperar.php">¿Olvidaste tu contraseña?</a>
                 <?php endif; ?>
-                <button class="button gold full"><?= match ($modo) { 'login' => 'Iniciar sesión', 'register' => 'Enviar código de verificación', 'recover' => 'Enviar instrucciones', default => 'Guardar contraseña' } ?></button>
+                <button class="button gold full"><?= match ($modo) { 'login' => 'Iniciar sesión', 'register' => 'Enviar solicitud', 'recover' => 'Enviar instrucciones', default => 'Guardar contraseña' } ?></button>
                 <?php if ($modo === 'login'): ?>
                 <hr>
                 <p class="small">¿Todavía no tienes acceso?</p>

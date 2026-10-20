@@ -9,10 +9,11 @@ try {
     http_response_code(403);
     exit(e($error->getMessage()));
 }
+$eraCliente = !empty($_SESSION['cliente_id']);
 $_SESSION = [];
 if (ini_get('session.use_cookies')) {
     $parametros = session_get_cookie_params();
     setcookie(session_name(), '', ['expires' => time() - 3600, 'path' => $parametros['path'], 'secure' => $parametros['secure'], 'httponly' => true, 'samesite' => 'Lax']);
 }
 session_destroy();
-redirect('app/Views/login.php');
+redirect('app/Views/sesion-cerrada.php?tipo=' . ($eraCliente ? 'cliente' : 'equipo'));

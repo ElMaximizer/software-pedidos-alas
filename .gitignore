@@ -1,6 +1,7 @@
 /public/uploads/productos/*
 !/public/uploads/productos/.htaccess
-/tmp/
-__pycache__/
+/app/Core/gmail-config.local.php
 /app/Core/db_credentials.php
 /app/Core/smtp_config.php
+/tmp/
+__pycache__/

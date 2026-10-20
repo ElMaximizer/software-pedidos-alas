@@ -63,10 +63,20 @@ function current_user(): ?array
     return one('SELECT id_sol, cedula, nombre, email, estado, rol FROM solicitud_usuario WHERE id_sol = ?', 'i', [(int) $_SESSION['user_id']]);
 }
 
+/** Cuenta autenticada de cliente; se guarda en una sesión distinta a la del equipo. */
+function current_client(): ?array
+{
+    if (empty($_SESSION['cliente_id'])) {
+        return null;
+    }
+    return one('SELECT id_cliente, nombre, email FROM clientes WHERE id_cliente = ?', 'i', [(int) $_SESSION['cliente_id']]);
+}
+
 function require_user(bool $esAdministracion = false): array
 {
     $usuario = current_user();
-    if (!$usuario || $usuario['estado'] !== 'aprobado') {
+    if (!$usuario || $usuario['estado'] !== 'aprobado'
+        || !in_array($usuario['rol'], ['empleado', 'administrador'], true)) {
         unset($_SESSION['user_id']);
         redirect('app/Views/login.php');
     }

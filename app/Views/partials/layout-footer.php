@@ -25,7 +25,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <small>© <?= date('Y') ?> Panadería Alas</small><a href="<?= e(base_url('app/Views/login.php')) ?>">Acceso del equipo →</a>
+            <small>© <?= date('Y') ?> Panadería Alas</small><a href="<?= e(base_url('app/Views/login.php')) ?>">Acceso al equipo →</a>
         </div>
     </div>
 </footer>

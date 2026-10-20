@@ -32,14 +32,28 @@ $tituloPagina = $tituloPagina ?? 'Panadería Alas';
                     <img src="<?= e(base_url('public/images/carrito.svg')) ?>" width="20" height="20" alt="">
                     Carrito <span class="cart-count"><?= array_sum($_SESSION['carrito'] ?? []) ?></span></a>
                 </nav>
-                <a class="button gold access-button" href="<?= e(base_url('app/Views/login.php')) ?>">Acceso</a>
+                <?php $clienteActual = current_client(); ?>
+                <?php if ($clienteActual): ?>
+                <div class="client-session">
+                    <details class="client-account-menu">
+                        <summary class="client-account-trigger"><span>Hola, <strong><?= e($clienteActual['nombre']) ?></strong></span><span class="client-account-chevron" aria-hidden="true">⌄</span></summary>
+                        <div class="client-account-dropdown">
+                            <a class="client-account-link" href="<?= e(base_url('app/Views/cliente-pedidos.php')) ?>"><strong>Mis pedidos</strong><span>Consultá el historial y estado de tus compras</span></a>
+                            <form action="<?= e(base_url('app/Controllers/logout.php')) ?>" method="post"><?php csrf_field(); ?><button class="client-logout-button">Cerrar sesión</button></form>
+                        </div>
+                    </details>
+                </div>
+                <?php else: ?>
+                <a class="button gold access-button" href="<?= e(base_url('app/Views/cliente-login.php')) ?>">Acceso clientes</a>
+                <?php endif; ?>
                 <?php endif; ?>
             </div>
         </header>
         <?php if ($esAdministracion): ?>
         <nav class="admin-nav" aria-label="Administración">
             <div class="container">
-                <?php foreach (['resumen' => ['Resumen', 'principal.php'], 'productos' => ['Productos', 'productos.php'], 'pedidos' => ['Pedidos', 'pedidos.php']] as $clave => [$etiqueta, $ruta]): ?>
+                <a class="button outline" href="<?= e(base_url('public/index.php')) ?>">Inicio del sitio</a>
+                <?php foreach (['resumen' => ['Panel administrativo', 'principal.php'], 'productos' => ['Productos', 'productos.php'], 'pedidos' => ['Pedidos', 'pedidos.php']] as $clave => [$etiqueta, $ruta]): ?>
                 <a class="button <?= $seccionActiva === $clave ? 'navy' : 'outline' ?>" <?= $seccionActiva === $clave ? 'aria-current="page"' : '' ?> href="<?= e(base_url('app/Views/' . $ruta)) ?>"><?= $etiqueta ?></a>
                 <?php endforeach; ?>
             </div>

@@ -1,5 +1,21 @@
 <?php
 require_once __DIR__ . '/../Core/app.php';
+function obtenerPedidosCliente(int $idCliente): array
+{
+    return rows(
+        "SELECT p.id_pedido, p.creado_en, p.fecha_retiro, p.hora_retiro, p.estado, p.total, p.producto,
+                GROUP_CONCAT(CONCAT(d.nombre_producto, ' × ', d.cantidad) ORDER BY d.id_detalle SEPARATOR ', ') AS productos
+         FROM pedidos p
+         LEFT JOIN pedido_detalles d ON d.id_pedido = p.id_pedido
+         WHERE p.id_cliente = ?
+         GROUP BY p.id_pedido
+         ORDER BY p.creado_en DESC, p.id_pedido DESC
+         LIMIT 50",
+        'i',
+        [$idCliente]
+    );
+}
+
 function obtenerLineasPedido(int $idPedido): array
 {
     return rows(
@@ -138,11 +154,12 @@ function guardarCabeceraPedido(array $datos, array $lineas, float $total, ?int $
         $total,
     ];
     if ($idPedido === null) {
+        $parametros[] = $datos['id_cliente'] ?? null;
         sql(
             'INSERT INTO pedidos
-                (producto, cantidad, cliente_nombre, telefono, fecha_retiro, hora_retiro, notas, estado, total)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            'sissssssd',
+                (producto, cantidad, cliente_nombre, telefono, fecha_retiro, hora_retiro, notas, estado, total, id_cliente)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            'sissssssdi',
             $parametros
         );
         return (int) $conexion->insert_id;

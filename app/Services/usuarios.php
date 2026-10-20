@@ -1,6 +1,12 @@
 <?php
 require_once __DIR__ . '/../Core/app.php';
-require_once __DIR__ . '/registro.php';
+function validarContrasena(string $contrasena, string $confirmacion): void
+{
+    if (strlen($contrasena) < 8 || strlen($contrasena) > 72 || $contrasena !== $confirmacion) {
+        throw new RuntimeException('Usá entre 8 y 72 caracteres y confirmá la misma contraseña.');
+    }
+}
+
 function iniciarSesion(string $cedula, string $contrasena): void
 {
     global $conexion;
@@ -43,6 +49,8 @@ function iniciarSesion(string $cedula, string $contrasena): void
                     [$intentos, $intentos, (int) $cedula]
                 );
                 $errorAcceso = $mensajeCredenciales;
+            } elseif (!in_array($usuario['rol'], ['empleado', 'administrador'], true)) {
+                $errorAcceso = $mensajeCredenciales;
             } else {
                 sql('DELETE FROM intentos_acceso WHERE cedula=?', 'i', [(int) $cedula]);
                 if ($usuario['estado'] !== 'aprobado') {
@@ -61,10 +69,49 @@ function iniciarSesion(string $cedula, string $contrasena): void
         throw new RuntimeException($errorAcceso);
     }
     session_regenerate_id(true);
+    unset($_SESSION['cliente_id']);
     $_SESSION['user_id'] = (int) $usuario['id_sol'];
     $_SESSION['usuario'] = (string) $usuario['cedula'];
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     unset($_SESSION['login_intentos'], $_SESSION['login_bloqueado_hasta']);
+}
+
+function solicitarUsuario(string $nombre, string $cedula, string $correo, string $contrasena, string $confirmacion): void
+{
+    global $conexion;
+    validate_text($nombre, 'tu nombre', 120);
+    if (!ctype_digit($cedula) || strlen($cedula) < 6 || strlen($cedula) > 8) {
+        throw new RuntimeException('Ingresá una cédula de 6 a 8 dígitos, sin puntos ni guiones.');
+    }
+    validarCorreo($correo);
+    validarContrasena($contrasena, $confirmacion);
+    // Conserva la exclusión de duplicados en instalaciones antiguas sin índice único.
+    $bloqueo = one("SELECT GET_LOCK('alas_solicitud_usuario', 5) AS obtenido");
+    if ((int) $bloqueo['obtenido'] !== 1) {
+        throw new RuntimeException('Intentá nuevamente en unos segundos.');
+    }
+    try {
+        if (one('SELECT id_sol FROM solicitud_usuario WHERE cedula=? OR email=?', 'is', [(int) $cedula, $correo])) {
+            throw new RuntimeException('Ya existe una cuenta o solicitud con esos datos.');
+        }
+        $conexion->begin_transaction();
+        try {
+            sql(
+                "INSERT INTO solicitud_usuario (nombre, cedula, email, password, estado, rol)
+                 VALUES (?, ?, ?, ?, 'pendiente', 'empleado')",
+                'siss',
+                [$nombre, (int) $cedula, $correo, password_hash($contrasena, PASSWORD_DEFAULT)]
+            );
+            queue_mail($correo, 'Solicitud de acceso recibida',
+                "Hola $nombre. Recibimos tu solicitud. El administrador de Panadería Alas debe aprobarla antes de que puedas iniciar sesión.");
+            $conexion->commit();
+        } catch (Throwable $error) {
+            $conexion->rollback();
+            throw $error;
+        }
+    } finally {
+        sql("SELECT RELEASE_LOCK('alas_solicitud_usuario')");
+    }
 }
 
 function buscarRecuperacion(string $token): ?array
