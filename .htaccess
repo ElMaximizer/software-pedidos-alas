@@ -1,5 +1,10 @@
 RewriteEngine On
 
+# Entradas web existentes: cada pantalla conserva sus controles de sesión y CSRF.
+# La lista cerrada evita exponer plantillas y controladores internos.
+RewriteRule ^app/Views/(login|register|recuperar|restablecer|solicitud-enviada|principal|panel|productos|pedidos|accesos|consultas|correos|agregar-producto|editar-producto|eliminar-producto|agregar-pedido|editar-pedido|eliminar-pedido)\.php$ - [L]
+RewriteRule ^app/Controllers/logout\.php$ - [L]
+
 # Proteger carpetas internas
 RewriteRule ^(app|database|docs|output)(/|$) - [F,L,NC]
 
