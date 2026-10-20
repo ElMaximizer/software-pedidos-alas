@@ -1,0 +1,13 @@
+@startuml
+class Usuario { +id: int; +nombre: string; +cedula: string; +rol: string }
+class Producto { +id: int; +nombre: string; +precio: decimal; +categoria: string; +activo: bool }
+class Pedido { +id: int; +clienteNombre: string; +telefono: string; +fechaRetiro: datetime; +estado: EstadoPedido; +total: decimal }
+class LineaPedido { +id: int; +productoNombre: string; +precioUnitario: decimal; +cantidad: int; +subtotal: decimal }
+class Consulta { +id: int; +nombre: string; +email: string; +mensaje: text }
+enum EstadoPedido { Pendiente; EnPreparacion; Listo; Entregado }
+Pedido "1" *-- "1..*" LineaPedido
+Producto "0..1" <-- "0..*" LineaPedido : referencia opcional
+Pedido --> EstadoPedido
+Usuario ..> Pedido : administra
+Usuario ..> Producto : mantiene
+@enduml

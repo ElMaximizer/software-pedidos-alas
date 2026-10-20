@@ -1,0 +1,20 @@
+@startuml
+start
+:Consultar catálogo;
+:Agregar productos al carrito;
+:Revisar cantidades;
+if (¿Carrito válido?) then (Sí)
+ :Ingresar nombre, teléfono y retiro;
+ if (¿Datos válidos y retiro permitido?) then (Sí)
+  :Revalidar precios y disponibilidad;
+  :Guardar pedido y líneas;
+  :Mostrar confirmación;
+ else (No)
+  :Mostrar errores de validación;
+  :Corregir datos;
+ endif
+else (No)
+ :Mostrar carrito vacío o inválido;
+endif
+stop
+@enduml

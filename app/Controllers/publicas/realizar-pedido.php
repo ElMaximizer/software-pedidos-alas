@@ -25,6 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'notas' => post('notas'),
             'precios_esperados' => array_column($articulos, 'precio', 'id_producto'),
         ];
+        $clienteActual = current_client();
+        $datos['id_cliente'] = $clienteActual ? (int) $clienteActual['id_cliente'] : null;
         $id = guardarPedido($datos, array_column($articulos, 'id_producto'), array_column($articulos, 'cantidad_carrito'));
         $_SESSION['pedido_confirmado'] = $id;
         $_SESSION['carrito'] = [];

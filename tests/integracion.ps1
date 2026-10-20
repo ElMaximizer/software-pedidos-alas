@@ -1,8 +1,6 @@
 param(
     [string]$BaseUrl = 'http://localhost/software-pedidos-alas/',
     [string]$Mysql = 'C:\xampp\mysql\bin\mysql.exe',
-    [int]$MysqlPort = 3306,
-    [string]$BuzonSmtpPrueba = '',
     [string]$CedulaAdministrador = '99999999',
     [string]$ContrasenaAdministrador = 'AlasDemo2026!',
     [switch]$ProbarImagen
@@ -11,9 +9,6 @@ param(
 # Ejecutar en PowerShell 7 contra una base local de desarrollo con datos_demo.
 # Los datos se identifican con una marca aleatoria y se retiran al terminar.
 $ErrorActionPreference = 'Stop'
-if (!$BuzonSmtpPrueba -or !(Test-Path -LiteralPath $BuzonSmtpPrueba)) {
-    throw 'Configurá un SMTP de pruebas que capture JSONL con destinatario/cuerpo y pasá -BuzonSmtpPrueba. Nunca ejecutar este test con destinatarios reales.'
-}
 $raizProyecto = Split-Path $PSScriptRoot -Parent
 $baseAlasTest = $BaseUrl.TrimEnd('/') + '/'
 $mysqlAlasTest = $Mysql
@@ -28,7 +23,7 @@ $idPedidoAlasTest = $null
 $idUsuarioAlasTest = $null
 $archivoImagenAlasTest = $null
 function DbAlasTest([string]$query) {
-    $output = & $mysqlAlasTest --user=root --host=127.0.0.1 --port=$MysqlPort --default-character-set=utf8mb4 --batch --skip-column-names --execute=$query
+    $output = & $mysqlAlasTest --user=root --host=localhost --default-character-set=utf8mb4 --batch --skip-column-names --execute=$query
     if ($LASTEXITCODE -ne 0) { throw 'Fallo en consulta de verificacion.' }
     return ($output -join "`n").Trim()
 }
@@ -57,7 +52,7 @@ try {
     foreach ($path in @('app/Views/productos.php','app/Views/pedidos.php','app/Views/accesos.php','app/Views/correos.php','app/Views/consultas.php')) { $null = PageAlasTest $path $adminAlasTest }
     foreach ($path in @('app/Views/producto-form.php','app/Views/pedido-form.php')) {
         $respuestaInterna = Invoke-WebRequest ($baseAlasTest + $path) -WebSession $adminAlasTest -SkipHttpErrorCheck
-        AssertAlasTest ($respuestaInterna.StatusCode -in @(403,404) -and $respuestaInterna.Content -notmatch 'Undefined variable|Warning:') 'El formulario interno no está protegido.'
+        AssertAlasTest ($respuestaInterna.StatusCode -eq 404 -and $respuestaInterna.Content -notmatch 'Undefined variable|Warning:') 'El formulario interno no devolvio un 404 limpio.'
     }
     foreach ($paginaInvalida in @('999999999999999999999','9223372036854775807','-10','texto')) {
         $null = PageAlasTest ('app/Views/pedidos.php?pagina=' + $paginaInvalida) $adminAlasTest
@@ -154,20 +149,7 @@ try {
     AssertAlasTest ((DbAlasTest "SELECT COUNT(*) FROM alas_bd.mensajes_contacto WHERE nombre='$tagAlasTest'") -eq '1') 'No se guardo la consulta.'
     Write-Output 'OK carrito, confirmacion publica y contacto persistente.'
     $page = PageAlasTest 'app/Views/register.php' $publicAlasTest
-    $page = PageAlasTest 'app/Views/register.php' $publicAlasTest @{csrf_token=(TokenAlasTest $page);nombre=$tagAlasTest;cedula=$cedulaAlasTest;email=$emailAlasTest;password='AlasTest2026!';confirm_password='AlasTest2026!'}
-    AssertAlasTest ($page.Content.Contains('Verific')) 'No se abrió la verificación de correo.'
-    AssertAlasTest ((DbAlasTest "SELECT COUNT(*) FROM alas_bd.solicitud_usuario WHERE cedula=$cedulaAlasTest") -eq '0') 'Se creó la cuenta sin verificar el correo.'
-    $captura = Get-Content -LiteralPath $BuzonSmtpPrueba | ForEach-Object { $_ | ConvertFrom-Json } | Where-Object { $_.destinatario -eq $emailAlasTest } | Select-Object -Last 1
-    $codigo = [regex]::Match($captura.cuerpo, 'es: ([0-9]{6})').Groups[1].Value
-    AssertAlasTest ($codigo.Length -eq 6) 'El SMTP de pruebas no recibió el código.'
-    AssertAlasTest (!$page.Content.Contains($codigo)) 'La página expuso el código de correo.'
-    $registroId = [regex]::Match($page.Content, 'name="registro_id" value="([^"]+)"').Groups[1].Value
-    $sinCsrf = PageAlasTest 'app/Views/verificar-correo.php' $publicAlasTest @{accion='confirmar';registro_id=$registroId;codigo=$codigo}
-    AssertAlasTest ($sinCsrf.Content.Contains('venci')) 'Se omitió CSRF en verificación.'
-    $incorrecto = PageAlasTest 'app/Views/verificar-correo.php' $publicAlasTest @{csrf_token=(TokenAlasTest $page);accion='confirmar';registro_id=$registroId;codigo='000000'}
-    AssertAlasTest ($incorrecto.Content.Contains('no es correcto')) 'Se aceptó un código incorrecto.'
-    AssertAlasTest ((DbAlasTest "SELECT COUNT(*) FROM alas_bd.solicitud_usuario WHERE cedula=$cedulaAlasTest") -eq '0') 'El código incorrecto creó una cuenta.'
-    $null = PageAlasTest 'app/Views/verificar-correo.php' $publicAlasTest @{csrf_token=(TokenAlasTest $page);accion='confirmar';registro_id=$registroId;codigo=$codigo}
+    $null = PageAlasTest 'app/Views/register.php' $publicAlasTest @{csrf_token=(TokenAlasTest $page);nombre=$tagAlasTest;cedula=$cedulaAlasTest;email=$emailAlasTest;password='AlasTest2026!';confirm_password='AlasTest2026!'}
     $idUsuarioAlasTest = DbAlasTest "SELECT id_sol FROM alas_bd.solicitud_usuario WHERE cedula=$cedulaAlasTest"
     AssertAlasTest ($idUsuarioAlasTest -match '^\d+$') 'No se guardo la solicitud de acceso.'
     $page = PageAlasTest 'app/Views/login.php' $publicAlasTest

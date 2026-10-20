@@ -1,0 +1,21 @@
+@startuml
+[*] --> Inicio
+Inicio --> Productos : catálogo
+Inicio --> Nosotros
+Inicio --> Contacto
+Productos --> DetalleProducto : seleccionar
+DetalleProducto --> Carrito : agregar
+Productos --> Carrito : ver carrito
+Carrito --> RealizarPedido : confirmar
+RealizarPedido --> PedidoConfirmado : datos válidos
+RealizarPedido --> Carrito : datos inválidos
+Contacto --> MensajeEnviado : enviar consulta
+Inicio --> Acceso : personal
+Acceso --> Panel : credenciales válidas
+Panel --> GestionPedidos
+Panel --> GestionProductos
+Panel --> Consultas
+Panel --> Estadísticas
+GestionPedidos --> DetallePedido
+GestionProductos --> FormularioProducto
+@enduml

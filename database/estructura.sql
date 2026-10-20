@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS productos (
 
 CREATE TABLE IF NOT EXISTS pedidos (
     id_pedido INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT UNSIGNED NULL,
     -- Resumen conservado para compatibilidad con los pedidos anteriores.
     producto VARCHAR(120) NOT NULL,
     cantidad INT UNSIGNED NOT NULL,
@@ -50,7 +51,8 @@ CREATE TABLE IF NOT EXISTS pedidos (
     motivo_cancelacion VARCHAR(255) NOT NULL DEFAULT '',
     version INT UNSIGNED NOT NULL DEFAULT 1,
     creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_pedidos_cliente_creado (id_cliente, creado_en)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS pedido_detalles (
@@ -93,6 +95,28 @@ CREATE TABLE IF NOT EXISTS correos_locales (
 -- El bloqueo pertenece a la cédula y se conserva al cambiar de sesión.
 CREATE TABLE IF NOT EXISTS intentos_acceso (
     cedula INT UNSIGNED PRIMARY KEY,
+    intentos TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    bloqueado_hasta DATETIME NULL,
+    actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Cuentas de clientes separadas de las cuentas del equipo.
+CREATE TABLE IF NOT EXISTS clientes (
+    id_cliente INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(120) NOT NULL,
+    email VARCHAR(190) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    verificado TINYINT(1) NOT NULL DEFAULT 0,
+    codigo_verificacion_hash VARCHAR(255) NULL,
+    codigo_verificacion_vence DATETIME NULL,
+    intentos_verificacion TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    ultimo_codigo_en DATETIME NULL,
+    creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_clientes_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS intentos_acceso_cliente (
+    email VARCHAR(190) PRIMARY KEY,
     intentos TINYINT UNSIGNED NOT NULL DEFAULT 0,
     bloqueado_hasta DATETIME NULL,
     actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

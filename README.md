@@ -1,3 +1,36 @@
+# Panadería Alas — sistema web de pedidos y producción
+
+Proyecto PHP 8.2+/MySQL para ejecutar localmente con XAMPP. Incluye código de aplicación, SQL de instalación, datos de demostración, pruebas y documentación académica.
+
+## Instalación rápida en Windows con XAMPP
+
+1. Descomprimí la carpeta `software-pedidos-alas-produccion` dentro de `C:\xampp\htdocs\`.
+2. Abrí XAMPP Control Panel e iniciá **Apache** y **MySQL**.
+3. Entrá a `http://localhost/phpmyadmin`.
+4. En **Importar**, seleccioná `database/estructura.sql` e importalo.
+5. Si querés datos y cuenta de demostración, importá luego `database/datos_demo.sql`.
+6. Si ya tenías el proyecto instalado, ejecutá una vez `C:\xampp\php\php.exe database\migrar-clientes.php` desde la carpeta del proyecto para crear las tablas de clientes.
+7. Abrí `http://localhost/software-pedidos-alas-produccion/public/index.php`.
+7. Acceso de administrador demo: cédula `99999999`, contraseña `AlasDemo2026!`.
+
+## Requisitos
+- XAMPP con Apache, PHP 8.2 o superior y MySQL/MariaDB.
+- Extensión PHP `mysqli` habilitada.
+- Navegador moderno.
+- Para pruebas automatizadas: Node.js; PowerShell 7 para la prueba HTTP.
+
+## Documentación de entrega
+- `docs/requisitos.md`: problema, objetivo, stakeholders, usuarios, requisitos, restricciones, factibilidad y alcance.
+- `docs/gestion-proyecto.md`: Product Backlog, propuesta de Sprint Backlog, cronograma Gantt y distribución de tareas.
+- `docs/testing.md`: casos de prueba y resultados efectivamente ejecutados.
+- `docs/uml/`: cinco diagramas UML en fuente PlantUML (casos de uso, navegabilidad, clases, secuencia y actividad).
+- `docs/guia-codigo.md`: explicación de la arquitectura y del código.
+
+## Importante
+La cuenta demo es solo para pruebas locales. Cambiá o eliminá las credenciales demo antes de cualquier despliegue público. El correo está configurado como bandeja local; no se envía correo real sin SMTP. Si el proyecto ya estaba instalado, consultá las instrucciones de migración más abajo; no importes datos demo repetidamente en una base con información real.
+
+---
+
 # Panadería Alas
 
 Aplicación PHP 8.2/MySQL compatible con MariaDB de XAMPP. Implementa el sitio
@@ -43,6 +76,26 @@ El instalador y las migraciones solo se ejecutan por consola; no durante visitas
 
 ## Funcionalidades
 
+- Acceso de clientes independiente del acceso al equipo, con registro por correo,
+  verificación por código de seis dígitos enviado por Gmail, contraseñas
+  protegidas y bloqueo temporal tras intentos fallidos. Las cuentas de clientes
+  se guardan separadas de empleados y administradores.
+
+### Configurar el envío de códigos por Gmail
+
+1. Activá la verificación en dos pasos en la cuenta Gmail que enviará los códigos.
+2. Creá una contraseña de aplicación para el sitio.
+3. Copiá `app/Core/gmail-config.example.php` como
+   `app/Core/gmail-config.local.php` y completá el correo Gmail y la contraseña
+   de aplicación. El archivo local está excluido de Git.
+4. Ejecutá una vez `C:\xampp\php\php.exe database\migrar-clientes.php` desde
+   la raíz del proyecto. Los códigos vencen a los 10 minutos y se almacenan
+   protegidos en la base.
+
+Google requiere la verificación en dos pasos para crear contraseñas de
+aplicación; usá esa contraseña para el envío SMTP, nunca la contraseña normal
+de Gmail.
+
 - Inicio, catálogo con búsqueda por nombre/ingredientes y filtro por categoría,
   detalle de producto, Nosotros, contacto y confirmación del mensaje.
 - Carrito en sesión: agregar, cambiar cantidades, quitar, vaciar y registrar el
@@ -65,15 +118,13 @@ El instalador y las migraciones solo se ejecutan por consola; no durante visitas
 - Interfaz adaptable a escritorio y móvil, formularios con CSRF y consultas
   preparadas. La confirmación del pedido evita duplicados al reenviar.
 
-## Verificación de correo y bandeja local
+## Correo local
 
-El registro envía por SMTP un código de seis dígitos y crea la solicitud solamente
-al verificarlo. Luego el administrador debe aprobar el acceso. Configurar
-`app/Core/smtp_config.php` en el hosting usando el ejemplo sin credenciales.
-Ese archivo privado se conserva durante el despliegue y nunca se sube a Git.
-PHPMailer está incluido y no requiere Composer. Ver [configuración y límites](docs/verificacion-correo.md).
-Las notificaciones anteriores de aprobación y recuperación conservan su bandeja
+XAMPP no tiene SMTP configurado: **no se envían correos por Internet**.
+Las solicitudes y recuperaciones generan mensajes persistentes en una bandeja
 local: Panel → Bandeja de correo local, disponible solo para administradores.
+Allí se pueden consultar y abrir los enlaces de recuperación para probar el flujo.
+Para usar correo real se deberá conectar un transporte SMTP.
 Las consultas de contacto se guardan en Panel → Consultas recibidas.
 
 ## Estructura del código
@@ -105,8 +156,7 @@ para abrir directamente.
 Con Apache y MySQL activos, una base local de desarrollo y los datos demo:
 
 ```powershell
-pwsh -NoProfile -File tests/integracion.ps1 -BuzonSmtpPrueba C:\ruta\buzon-pruebas.jsonl
-C:\xampp\php\php.exe tests\registro.php
+pwsh -NoProfile -File tests/integracion.ps1
 C:\xampp\php\php.exe tests\pedidos.php
 C:\xampp\php\php.exe tests\catalogo.php
 node --test tests/imagenes.test.js

@@ -1,0 +1,29 @@
+@startuml
+left to right direction
+actor Cliente
+actor Empleado
+actor Administrador
+rectangle "Sistema web Panadería Alas" {
+ usecase "Consultar catálogo" as UC1
+ usecase "Buscar/filtrar productos" as UC2
+ usecase "Armar carrito" as UC3
+ usecase "Registrar pedido" as UC4
+ usecase "Consultar pedidos" as UC5
+ usecase "Cambiar estado del pedido" as UC6
+ usecase "Administrar productos" as UC7
+ usecase "Filtrar pedidos por fecha" as UC8
+ usecase "Ver estadísticas" as UC9
+ usecase "Gestionar accesos" as UC10
+}
+Cliente --> UC1
+Cliente --> UC2
+Cliente --> UC3
+Cliente --> UC4
+Empleado --> UC5
+Empleado --> UC6
+Administrador --> UC5
+Administrador --> UC7
+Administrador --> UC8
+Administrador --> UC9
+Administrador --> UC10
+@enduml

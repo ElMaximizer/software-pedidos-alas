@@ -1,0 +1,18 @@
+@startuml
+actor Cliente
+participant "Vista Carrito" as Vista
+participant "Controlador realizar-pedido" as Controlador
+participant "Servicio de pedidos" as Servicio
+database "MySQL" as BD
+Cliente -> Vista : confirmar pedido
+Vista -> Controlador : POST datos + token CSRF
+Controlador -> Controlador : validar datos y carrito
+Controlador -> Servicio : crear pedido
+Servicio -> BD : consultar precios/disponibilidad
+BD --> Servicio : productos válidos
+Servicio -> BD : guardar pedido y líneas (transacción)
+BD --> Servicio : ID del pedido
+Servicio --> Controlador : resultado
+Controlador --> Vista : redirigir a confirmación
+Vista --> Cliente : mostrar número y resumen
+@enduml
