@@ -46,6 +46,8 @@ if ! git diff --quiet; then
     stashed=$(git rev-parse refs/stash)
     printf '%s\n' "$stashed" > "$backup/stash.txt"
 fi
+# La umask 077 anterior protege el respaldo, pero no debe afectar al checkout.
+umask 022
 git merge --ff-only origin/produccion
 updated=1
 sudo bash deploy/install-vps.sh "$key"

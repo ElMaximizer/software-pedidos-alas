@@ -3,6 +3,13 @@ set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
 source ./alas-deploy
 
+(
+    umask 077
+    source ./alas-deploy
+    [[ $(umask) == 0022 ]]
+)
+echo 'OK: un despliegue con umask heredada 077 normaliza el checkout a 022.'
+
 temp=$(mktemp -d)
 trap 'rm -rf -- "$temp"' EXIT
 mkdir -p "$temp/candidate/deploy" "$temp/candidate/database"
