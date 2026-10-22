@@ -142,9 +142,16 @@ function iniciarSesionCliente(string $email, string $contrasena): void
         }
         throw new RuntimeException($errorAcceso);
     }
+    $usuarioEquipo = current_user();
+    $conservarDueno = $usuarioEquipo
+        && $usuarioEquipo['rol'] === 'dueno'
+        && $usuarioEquipo['estado'] === 'aprobado';
     session_regenerate_id(true);
-    unset($_SESSION['user_id']);
+    if (!$conservarDueno) {
+        unset($_SESSION['user_id']);
+    }
     $_SESSION['cliente_id'] = (int) $cliente['id_cliente'];
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     unset($_SESSION['login_intentos'], $_SESSION['login_bloqueado_hasta']);
 }
+
