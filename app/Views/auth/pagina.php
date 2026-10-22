@@ -16,14 +16,14 @@
             <h1><?= e($tituloPagina) ?></h1>
             <?php show_flash(); ?>
             <?php if ($modo === 'sent'): ?>
-            <p>Si el correo corresponde a una cuenta registrada, las instrucciones estarán en la bandeja de correo de esta instalación. Las solicitudes de usuario deben ser aprobadas por un administrador.</p>
+            <p>Si el correo corresponde a una cuenta registrada, las instrucciones estarán en la bandeja de correo de esta instalación. El dueño revisará las solicitudes de acceso al equipo.</p>
             <aside class="callout">
                 <h4>Solicitud registrada</h4>
                 <p>El equipo revisará tus datos para continuar.</p>
             </aside>
             <a class="button gold full" href="login.php">Volver a iniciar sesión</a>
             <?php else: ?>
-            <p><?= match ($modo) { 'login' => 'Ingresa con tu cédula de empleado o administrador.', 'register' => 'El administrador revisará tu solicitud de acceso al equipo.', 'recover' => 'Escribe el correo asociado a tu cuenta.', default => 'Elige una contraseña para recuperar tu acceso.' } ?></p>
+            <p><?= match ($modo) { 'login' => 'Ingresa con tu cédula de empleado, administrador o dueño.', 'register' => 'El dueño revisará tu solicitud. Si la envía un administrador, podrá aprobarla o rechazarla el dueño.', 'recover' => 'Escribe el correo asociado a tu cuenta.', default => 'Elige una contraseña para recuperar tu acceso.' } ?></p>
             <?php if ($error): ?>
             <div class="notice danger" role="alert">
                 <strong><?= $modo === 'login' ? 'No pudimos iniciar sesión' : 'Revisá los datos' ?></strong>
@@ -92,3 +92,4 @@
     </div>
 </main>
 <?php require __DIR__ . '/../partials/layout-footer.php'; ?>
+
