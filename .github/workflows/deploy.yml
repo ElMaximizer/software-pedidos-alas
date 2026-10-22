@@ -17,7 +17,7 @@ jobs:
     if: github.ref == 'refs/heads/produccion'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    environment: production
+    environment: vps-produccion
     steps:
       - name: Desplegar el commit por SSH
         shell: bash
