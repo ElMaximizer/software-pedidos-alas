@@ -1,5 +1,8 @@
 #!/bin/bash
 set -euo pipefail
+# Git crea codigo legible por Apache, incluso si SSH hereda una umask privada.
+# Los archivos privados de estado tienen permisos explicitos mas abajo.
+umask 022
 
 fail() { echo "ERROR: $*" >&2; return 1; }
 as_git() { runuser -u ubuntu -- git -C "$REPO" "$@"; }
