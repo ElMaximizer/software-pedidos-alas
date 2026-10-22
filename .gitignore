@@ -5,3 +5,9 @@
 /app/Core/smtp_config.php
 /tmp/
 __pycache__/
+
+# Configuracion privada del despliegue
+.env
+.env.*
+*.key
+

@@ -2,14 +2,15 @@ RewriteEngine On
 
 # Entradas web existentes: cada pantalla conserva sus controles de sesión y CSRF.
 # La lista cerrada evita exponer plantillas y controladores internos.
-RewriteRule ^app/Views/(login|register|verificar-correo|recuperar|restablecer|solicitud-enviada|principal|panel|productos|pedidos|accesos|consultas|correos|agregar-producto|editar-producto|eliminar-producto|agregar-pedido|editar-pedido|eliminar-pedido)\.php$ - [L]
-RewriteRule ^app/Controllers/logout\.php$ - [L]
+RewriteRule ^app/Views/(cliente-login|cliente-registro|cliente-verificar|cliente-pedidos|sesion-cerrada|empleados|presencia|login|register|verificar-correo|recuperar|restablecer|solicitud-enviada|principal|panel|productos|pedidos|accesos|consultas|correos|agregar-producto|editar-producto|eliminar-producto|agregar-pedido|editar-pedido|eliminar-pedido)\.php$ - [L]
+RewriteRule ^app/Controllers/(logout|presencia-equipo)\.php$ - [L]
 
 # Proteger carpetas internas
-RewriteRule ^(app|database|docs|output)(/|$) - [F,L,NC]
+RewriteRule ^(app|database|docs|output|tests|deploy|\.git|\.github)(/|$) - [F,L,NC]
 
 # Evitar bucles de reescritura
 RewriteCond %{REQUEST_URI} !^/public(/|$) [NC]
 
 # Cargar la web desde public
 RewriteRule ^(.*)$ public/$1 [L]
+

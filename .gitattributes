@@ -1,0 +1,5 @@
+*.sh text eol=lf
+*.yml text eol=lf
+deploy/alas-deploy text eol=lf
+deploy/alas-deploy-ssh text eol=lf
+deploy/migrations.txt text eol=lf

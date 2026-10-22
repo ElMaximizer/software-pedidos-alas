@@ -1,0 +1,3 @@
+# SQL idempotente y compatible con la version anterior; una ruta por linea.
+# No agregar estructura.sql, datos_demo.sql ni migrar.php.
+database/migrar-presencia-equipo.sql
