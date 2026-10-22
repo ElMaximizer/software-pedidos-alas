@@ -33,10 +33,17 @@
         <h2>Atención del equipo</h2>
         <div class="actions">
             <a class="button outline" href="consultas.php">Consultas recibidas (<?= $consultasNuevas ?> nuevas)</a>
+            <?php if ($usuarioActual['rol'] === 'dueno'): ?>
+            <a class="button outline" href="empleados.php">Gestionar personal</a><a class="button outline" href="accesos.php">Solicitudes de acceso (<?= $solicitudesPendientes ?>)</a><a class="button outline" href="presencia.php">Actividad del personal</a>
+            <?php endif; ?>
             <?php if ($usuarioActual['rol'] === 'administrador'): ?>
-            <a class="button outline" href="accesos.php">Solicitudes de acceso (<?= $solicitudesPendientes ?>)</a><a class="button outline" href="correos.php">Bandeja de correo local</a>
+            <a class="button outline" href="register.php">Solicitar alta de personal</a>
+            <?php endif; ?>
+            <?php if (in_array($usuarioActual['rol'], ['administrador', 'dueno'], true)): ?>
+            <a class="button outline" href="correos.php">Bandeja de correo local</a>
             <?php endif; ?>
         </div>
     </section>
 </main>
 <?php require __DIR__ . '/../partials/admin-footer.php'; ?>
+
