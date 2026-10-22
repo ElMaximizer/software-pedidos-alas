@@ -49,7 +49,7 @@ function iniciarSesion(string $cedula, string $contrasena): void
                     [$intentos, $intentos, (int) $cedula]
                 );
                 $errorAcceso = $mensajeCredenciales;
-            } elseif (!in_array($usuario['rol'], ['empleado', 'administrador'], true)) {
+            } elseif (!in_array($usuario['rol'], ['empleado', 'administrador', 'dueno'], true)) {
                 $errorAcceso = $mensajeCredenciales;
             } else {
                 sql('DELETE FROM intentos_acceso WHERE cedula=?', 'i', [(int) $cedula]);
@@ -69,10 +69,13 @@ function iniciarSesion(string $cedula, string $contrasena): void
         throw new RuntimeException($errorAcceso);
     }
     session_regenerate_id(true);
-    unset($_SESSION['cliente_id']);
+    if ($usuario['rol'] !== 'dueno') {
+        unset($_SESSION['cliente_id']);
+    }
     $_SESSION['user_id'] = (int) $usuario['id_sol'];
     $_SESSION['usuario'] = (string) $usuario['cedula'];
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    registrarIngresoEquipo($usuario);
     unset($_SESSION['login_intentos'], $_SESSION['login_bloqueado_hasta']);
 }
 
@@ -103,7 +106,7 @@ function solicitarUsuario(string $nombre, string $cedula, string $correo, string
                 [$nombre, (int) $cedula, $correo, password_hash($contrasena, PASSWORD_DEFAULT)]
             );
             queue_mail($correo, 'Solicitud de acceso recibida',
-                "Hola $nombre. Recibimos tu solicitud. El administrador de Panadería Alas debe aprobarla antes de que puedas iniciar sesión.");
+                "Hola $nombre. Recibimos tu solicitud. El dueño de Panadería Alas debe aprobarla antes de que puedas iniciar sesión.");
             $conexion->commit();
         } catch (Throwable $error) {
             $conexion->rollback();
@@ -112,6 +115,44 @@ function solicitarUsuario(string $nombre, string $cedula, string $correo, string
     } finally {
         sql("SELECT RELEASE_LOCK('alas_solicitud_usuario')");
     }
+}
+
+/** Crea directamente una cuenta aprobada de empleado; el controlador limita esto al dueño. */
+function crearEmpleado(string $nombre, string $cedula, string $correo, string $contrasena, string $confirmacion, string $rol): void
+{
+    validate_text($nombre, 'el nombre del empleado', 120);
+    if (!ctype_digit($cedula) || strlen($cedula) < 6 || strlen($cedula) > 8) {
+        throw new RuntimeException('Ingresá una cédula de 6 a 8 dígitos, sin puntos ni guiones.');
+    }
+    if ($correo !== '') {
+        validarCorreo($correo);
+    }
+    if (!in_array($rol, ['empleado', 'administrador'], true)) {
+        throw new RuntimeException('Elegí un rol válido para la cuenta.');
+    }
+    validarContrasena($contrasena, $confirmacion);
+    if (one('SELECT id_sol FROM solicitud_usuario WHERE cedula=? OR (? <> \'\' AND email=?)', 'iss', [(int) $cedula, $correo, $correo])) {
+        throw new RuntimeException('Ya existe una cuenta con esa cédula o correo.');
+    }
+    sql(
+        "INSERT INTO solicitud_usuario (nombre, cedula, email, password, estado, rol)
+         VALUES (?, ?, ?, ?, 'aprobado', ?)",
+        'sisss',
+        [$nombre, (int) $cedula, $correo !== '' ? $correo : null, password_hash($contrasena, PASSWORD_DEFAULT), $rol]
+    );
+}
+
+/** Revoca el acceso del empleado conservando sus registros históricos. */
+function desactivarEmpleado(int $idEmpleado): void
+{
+    if ($idEmpleado < 1) {
+        throw new RuntimeException('Seleccioná un empleado válido.');
+    }
+    $empleado = one("SELECT id_sol FROM solicitud_usuario WHERE id_sol=? AND rol IN ('empleado','administrador') FOR UPDATE", 'i', [$idEmpleado]);
+    if (!$empleado) {
+        throw new RuntimeException('No se encontró un empleado activo para quitar.');
+    }
+    sql("UPDATE solicitud_usuario SET estado='rechazado' WHERE id_sol=? AND rol IN ('empleado','administrador')", 'i', [$idEmpleado]);
 }
 
 function buscarRecuperacion(string $token): ?array
@@ -186,7 +227,7 @@ function restablecerContrasena(?array $recuperacion, string $contrasena, string 
     }
 }
 
-function revisarSolicitud(int $idUsuario, string $accion, int $idAdministrador): void
+function revisarSolicitud(int $idUsuario, string $accion, string $rolAprobado, int $idAdministrador): void
 {
     global $conexion;
     $estado = match ($accion) {
@@ -194,7 +235,8 @@ function revisarSolicitud(int $idUsuario, string $accion, int $idAdministrador):
         'rechazar' => 'rechazado',
         default => '',
     };
-    if ($estado === '' || $idUsuario === $idAdministrador) {
+    if ($estado === '' || $idUsuario === $idAdministrador
+        || ($estado === 'aprobado' && !in_array($rolAprobado, ['empleado', 'administrador'], true))) {
         throw new RuntimeException('Acción no válida.');
     }
     $conexion->begin_transaction();
@@ -203,7 +245,7 @@ function revisarSolicitud(int $idUsuario, string $accion, int $idAdministrador):
         if (!$solicitud) {
             throw new RuntimeException('La solicitud ya fue revisada.');
         }
-        sql('UPDATE solicitud_usuario SET estado=? WHERE id_sol=?', 'si', [$estado, $idUsuario]);
+        sql('UPDATE solicitud_usuario SET estado=?, rol=? WHERE id_sol=?', 'ssi', [$estado, $estado === 'aprobado' ? $rolAprobado : $solicitud['rol'], $idUsuario]);
         if ($solicitud['email']) {
             $respuesta = $estado === 'aprobado'
             ? 'Tu acceso fue aprobado. Ya podés iniciar sesión con tu cédula y contraseña.'
@@ -216,3 +258,4 @@ function revisarSolicitud(int $idUsuario, string $accion, int $idAdministrador):
         throw $error;
     }
 }
+

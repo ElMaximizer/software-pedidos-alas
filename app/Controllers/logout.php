@@ -10,6 +10,7 @@ try {
     exit(e($error->getMessage()));
 }
 $eraCliente = !empty($_SESSION['cliente_id']);
+cerrarPresenciaEquipo();
 $_SESSION = [];
 if (ini_get('session.use_cookies')) {
     $parametros = session_get_cookie_params();
@@ -17,3 +18,4 @@ if (ini_get('session.use_cookies')) {
 }
 session_destroy();
 redirect('app/Views/sesion-cerrada.php?tipo=' . ($eraCliente ? 'cliente' : 'equipo'));
+

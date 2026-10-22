@@ -3,7 +3,7 @@
     <a class="back-link" href="principal.php">← Volver al panel</a>
     <div class="page-heading">
         <h1>Solicitudes de acceso</h1>
-        <p>Revisa las solicitudes del equipo antes de habilitar el acceso.</p>
+        <p>Como dueño, aprobá o rechazá solicitudes y elegí el rol con el que ingresará cada persona.</p>
     </div>
     <?php show_flash(); ?>
     <?php if ($error): ?>
@@ -23,6 +23,7 @@
             <form class="actions" method="post">
                 <?php csrf_field(); ?>
                 <input type="hidden" name="id_usuario" value="<?= (int) $solicitud['id_sol'] ?>">
+                <label>Al aprobar<select name="rol"><option value="empleado">Empleado</option><option value="administrador">Administrador</option></select></label>
                 <button name="accion" value="aprobar" class="button gold">Aprobar acceso</button><button name="accion" value="rechazar" class="button red-button">Rechazar</button>
             </form>
             <?php endif; ?>
@@ -31,3 +32,4 @@
     </div>
 </main>
 <?php require __DIR__ . '/../partials/admin-footer.php'; ?>
+
