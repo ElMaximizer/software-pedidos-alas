@@ -1,0 +1,146 @@
+#!/bin/bash
+set -euo pipefail
+
+fail() { echo "ERROR: $*" >&2; return 1; }
+as_git() { runuser -u ubuntu -- git -C "$REPO" "$@"; }
+compose() { docker compose --project-directory /home/ubuntu/alas-docker "$@"; }
+
+assert_clean() {
+    [[ $(as_git branch --show-current) == produccion ]] || { fail 'La VPS no esta en produccion.'; return 1; }
+    as_git diff --quiet || { fail 'Hay cambios locales: no se sobrescribieron.'; return 1; }
+    as_git diff --cached --quiet || { fail 'Hay cambios preparados: no se sobrescribieron.'; return 1; }
+}
+
+check_manifest() {
+    local stage=$1 line digest recorded applied_path applied_hash
+    [[ -f "$stage/deploy/migrations.txt" && ! -L "$stage/deploy/migrations.txt" ]] ||
+        { fail 'Falta deploy/migrations.txt.'; return 1; }
+    declare -A seen=()
+    while IFS= read -r line || [[ -n $line ]]; do
+        [[ -z $line || $line == \#* ]] && continue
+        [[ $line =~ ^database/migrar-[A-Za-z0-9_-]+\.sql$ ]] ||
+            { fail "Migracion no permitida: $line"; return 1; }
+        [[ ! ${seen[$line]+present} ]] || { fail "Migracion duplicada: $line"; return 1; }
+        seen[$line]=1
+        [[ -f "$stage/$line" && ! -L "$stage/$line" ]] ||
+            { fail "No existe la migracion: $line"; return 1; }
+        digest=$(sha256sum "$stage/$line" | cut -d ' ' -f 1)
+        recorded=$(awk -v path="$line" '$1 == path { print $2 }' "$LEDGER")
+        [[ -z $recorded || $recorded == "$digest" ]] ||
+            { fail "Se modifico una migracion ya aplicada: $line. Crear otra migracion."; return 1; }
+    done < "$stage/deploy/migrations.txt"
+    while IFS=$'\t' read -r applied_path applied_hash; do
+        [[ -z $applied_path ]] && continue
+        [[ ${seen[$applied_path]+present} ]] ||
+            { fail "Se retiro una migracion aplicada del manifiesto: $applied_path"; return 1; }
+    done < "$LEDGER"
+}
+
+validate_candidate() {
+    docker run --rm --network none \
+        --mount "type=bind,source=$1,target=/candidate,readonly" \
+        --entrypoint /bin/bash alas-docker-web -euo pipefail -c '
+          find /candidate/app /candidate/public /candidate/database -type f -name "*.php" -print0 |
+          while IFS= read -r -d "" file; do
+            php -l "$file" >/dev/null || exit 1
+          done'
+    echo 'Sintaxis PHP verificada.'
+}
+
+apply_migrations() {
+    local stage=$1 line digest recorded
+    while IFS= read -r line || [[ -n $line ]]; do
+        [[ -z $line || $line == \#* ]] && continue
+        digest=$(sha256sum "$stage/$line" | cut -d ' ' -f 1)
+        recorded=$(awk -v path="$line" '$1 == path { print $2 }' "$LEDGER")
+        [[ -n $recorded ]] && continue
+        echo "Aplicando $line"
+        compose cp "$stage/$line" db:/tmp/alas-deploy-migration.sql
+        compose exec -T --interactive=false db sh -c \
+            'MYSQL_PWD="$MARIADB_PASSWORD" mariadb --user="$MARIADB_USER" "$MARIADB_DATABASE" < /tmp/alas-deploy-migration.sql'
+        compose exec -T --interactive=false db rm -f /tmp/alas-deploy-migration.sql
+        printf '%s\t%s\n' "$line" "$digest" >> "$LEDGER"
+    done < "$stage/deploy/migrations.txt"
+}
+
+healthcheck() {
+    local path status
+    for path in / /app/Views/login.php /app/Views/cliente-login.php; do
+        status=$(curl --retry 6 --retry-all-errors --retry-delay 2 \
+            --connect-timeout 5 --max-time 15 --fail --silent --show-error \
+            --connect-to '40.160.100.156:443:127.0.0.1:443' \
+            --output /dev/null --write-out '%{http_code}' \
+            "https://40.160.100.156$path")
+        [[ $status == 200 ]] || { fail "HTTP $status en $path"; return 1; }
+    done
+}
+
+finish() {
+    local status=$1
+    trap - EXIT
+    if [[ $status -ne 0 && ${STOPPED:-0} == 1 ]]; then
+        echo 'Despliegue fallido. Recuperando el codigo anterior; la base NO se revierte.' >&2
+        current=$(as_git rev-parse HEAD)
+        if [[ $current != "$TARGET" && $current != "$PREVIOUS" ]]; then
+            echo 'HEAD fue cambiado por otra persona. No se hizo rollback automatico.' >&2
+        elif assert_clean && as_git reset --keep "$PREVIOUS" && compose start web; then
+            echo "Codigo recuperado: $PREVIOUS" >&2
+        else
+            echo 'La recuperacion requiere intervencion. No se forzaron cambios locales.' >&2
+        fi
+    fi
+    if [[ ${STAGE:-} == /var/tmp/alas-deploy.* && -d $STAGE ]]; then
+        rm -rf -- "$STAGE"
+    fi
+    exit "$status"
+}
+
+main() {
+    [[ $(id -u) == 0 ]] || { fail 'Ejecutar mediante sudo.'; exit 1; }
+    [[ $# == 1 && $1 =~ ^[0-9a-f]{40}$ ]] || { fail 'Se requiere un SHA completo.'; exit 1; }
+    local target=$1 latest
+    TARGET=$target
+    REPO=/home/ubuntu/software-pedidos-alas
+    LEDGER=/var/lib/alas-deploy/migrations.tsv
+    STOPPED=0
+    exec 9>/run/lock/alas-deploy.lock
+    flock -w 600 9 || { fail 'Otro despliegue sigue activo.'; exit 1; }
+    install -d -m 700 /var/lib/alas-deploy
+    touch "$LEDGER"
+    chmod 600 "$LEDGER"
+    assert_clean
+    as_git fetch origin produccion
+    latest=$(as_git rev-parse refs/remotes/origin/produccion)
+    if [[ $target != "$latest" ]]; then
+        echo 'Ejecucion superada por un commit mas reciente de produccion. Se omite.'
+        return 0
+    fi
+    PREVIOUS=$(as_git rev-parse HEAD)
+    as_git merge-base --is-ancestor "$PREVIOUS" "$target" ||
+        { fail 'La actualizacion no es fast-forward.'; exit 1; }
+    compose ps --status running --services | grep -qx web ||
+        { fail 'La web esta detenida; no se inicia automaticamente.'; exit 1; }
+    STAGE=$(mktemp -d /var/tmp/alas-deploy.XXXXXXXX)
+    trap 'finish $?' EXIT
+    as_git archive "$target" | tar -x -C "$STAGE"
+    validate_candidate "$STAGE"
+    check_manifest "$STAGE"
+    /usr/local/sbin/alas-backup
+    # Revalidar despues del respaldo: no pisar ediciones realizadas mientras tanto.
+    assert_clean
+    [[ $(as_git rev-parse HEAD) == "$PREVIOUS" ]] ||
+        { fail 'HEAD cambio durante la preparacion.'; exit 1; }
+    STOPPED=1
+    compose stop web
+    apply_migrations "$STAGE"
+    as_git merge --ff-only "$target"
+    compose start web
+    healthcheck
+    STOPPED=0
+    printf '%s\n' "$target" > /var/lib/alas-deploy/last-successful
+    echo "Despliegue correcto: $target"
+}
+
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+    main "$@"
+fi
